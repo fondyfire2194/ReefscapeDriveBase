@@ -21,7 +21,7 @@
   "encoder": {
     "type": "thrifty",
     "id": 1,
-    "canbus": "CV1"
+    "canbus": null
   },
   "absoluteEncoderInverted": false
 }
