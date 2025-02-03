@@ -18,20 +18,25 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.Constants.FieldConstants.Side;
+import frc.robot.Factories.CommandFactory;
 import frc.robot.commands.auto.DriveToNearestReefZone;
-import frc.robot.commands.auto.DriveToAlgaeProcessor;
-import frc.robot.commands.auto.DriveToNearestCoralStation;
+import frc.robot.commands.auto.FindCurrentReefZone;
+import frc.robot.commands.auto.GetNearestReefZonePose;
 import frc.robot.commands.swervedrive.drivebase.AbsoluteDriveAdv;
+import frc.robot.commands.swervedrive.drivebase.AbsoluteDrivePointAtReef;
 import frc.robot.subsystems.LimelightVision;
 import frc.robot.subsystems.swervedrive.SwerveSubsystem;
 import frc.robot.utils.LedStrip;
 import monologue.Logged;
 import java.io.File;
+import java.util.PrimitiveIterator.OfInt;
+
 import swervelib.SwerveInputStream;
 
 /**
@@ -44,10 +49,11 @@ import swervelib.SwerveInputStream;
  */
 public class RobotContainer implements Logged {
 
-
         LedStrip ls = new LedStrip();
 
         SendableChooser<Command> autoChooser;
+
+        CommandFactory cf;
 
         // Replace with CommandPS4Controller or CommandJoystick if needed
         final CommandXboxController driverXbox = new CommandXboxController(0);
@@ -79,6 +85,18 @@ public class RobotContainer implements Logged {
                         driverXbox.getHID()::getXButtonPressed,
                         driverXbox.getHID()::getBButtonPressed);
 
+        AbsoluteDrivePointAtReef drivePointAtReef = new AbsoluteDrivePointAtReef(
+                        drivebase,
+                        () -> -MathUtil.applyDeadband(
+                                        driverXbox.getLeftY(),
+                                        OperatorConstants.LEFT_Y_DEADBAND),
+                        () -> -MathUtil.applyDeadband(
+                                        driverXbox.getLeftX(),
+                                        OperatorConstants.DEADBAND),
+                        () -> -MathUtil.applyDeadband(
+                                        driverXbox.getRightX(),
+                                        OperatorConstants.RIGHT_X_DEADBAND));
+
         /**
          * Converts driver input into a field-relative ChassisSpeeds that is controlled
          * by angular velocity.
@@ -108,7 +126,7 @@ public class RobotContainer implements Logged {
         Command driveFieldOrientedDirectAngle = drivebase.driveFieldOriented(driveDirectAngle);
 
         // Applies deadbands and inverts controls because joysticks
-        // are back-right positive while robot
+        // are back-right positive while robott
         // controls are front-left positive
         // left stick controls translation
         // right stick controls the angular velocity of the robot
@@ -147,6 +165,7 @@ public class RobotContainer implements Logged {
          */
         public RobotContainer() {
 
+                cf = new CommandFactory(drivebase);
                 // Configure the trigger bindings
                 configureBindings();
                 // reefZoneChange.onTrue(rumble(driverXbox, RumbleType.kLeftRumble, 1))
@@ -179,15 +198,78 @@ public class RobotContainer implements Logged {
                 // drivebase.setDefaultCommand(
                 // !RobotBase.isSimulation() ? driveFieldOrientedDirectAngle :
                 // driveFieldOrientedDirectAngleSim);
-                drivebase.setDefaultCommand(drivebase.driveCommand(
-                                () -> -driverXbox.getLeftY(),
-                                () -> -driverXbox.getLeftX(),
-                                () -> -driverXbox.getRightX()));
+                drivebase.setDefaultCommand(
+                                new ParallelCommandGroup(
+                                                drivebase.driveCommand(
+                                                                () -> -driverXbox.getLeftY(),
+                                                                () -> -driverXbox.getLeftX(),
+                                                                () -> -driverXbox.getRightX()),
+                                                new FindCurrentReefZone(drivebase, ls)));
 
                 if (Robot.isSimulation()) {
                         driverXbox.start()
                                         .onTrue(Commands.runOnce(() -> drivebase
                                                         .resetOdometry(new Pose2d(8, 4, new Rotation2d()))));
+                }
+                if (DriverStation.isTeleop()) {
+                        driverXbox.a().onTrue((Commands.runOnce(drivebase::zeroGyro)));
+                        driverXbox.x().onTrue(Commands.runOnce(drivebase::addFakeVisionReading));
+                        driverXbox.b().whileTrue(
+                                        drivebase.driveToPose(
+                                                        new Pose2d(new Translation2d(6, 3.8),
+                                                                        Rotation2d.fromDegrees(180))));
+                        driverXbox.y().onTrue(Commands.none());
+                        driverXbox.start().onTrue(drivebase.centerModulesCommand());
+                        driverXbox.back().whileTrue(Commands.none());
+
+                        driverXbox.leftBumper()
+                                        .whileTrue(
+                                                        new ParallelCommandGroup(
+                                                                        new FindCurrentReefZone(drivebase, ls),
+                                                                        new AbsoluteDrivePointAtReef(
+                                                                                        drivebase,
+                                                                                        () -> -MathUtil.applyDeadband(
+                                                                                                        driverXbox.getLeftY(),
+                                                                                                        OperatorConstants.LEFT_Y_DEADBAND),
+                                                                                        () -> -MathUtil.applyDeadband(
+                                                                                                        driverXbox.getLeftX(),
+                                                                                                        OperatorConstants.DEADBAND),
+                                                                                        () -> -MathUtil.applyDeadband(
+                                                                                                        driverXbox.getRightX(),
+                                                                                                        OperatorConstants.RIGHT_X_DEADBAND))))
+                                        .onFalse(new GetNearestReefZonePose(drivebase, cf));
+
+                        driverXbox.rightBumper().onTrue(
+                                        Commands.runOnce(() -> drivebase.resetOdometry(
+                                                        new Pose2d(7.372, 6.692, new Rotation2d(Math.PI)))));
+
+                        driverXbox.leftTrigger().whileTrue(
+                                        new DriveToNearestReefZone(drivebase))
+                                        .onChange(Commands.runOnce(() -> rumble(driverXbox, RumbleType.kLeftRumble, .1),
+                                                        drivebase));
+
+                        driverXbox.rightTrigger().onTrue(Commands.none());
+
+                        // driverXbox.leftBumper().whileTrue(
+                        // new DriveToNearestCoralStation(drivebase));
+
+                        driverXbox.povDown().onTrue(new DriveToNearestReefZone(drivebase));
+
+                        driverXbox.povUp().onTrue(Commands.none());
+
+                        driverXbox.povLeft().onTrue(Commands.runOnce(() -> drivebase.side = Side.LEFT));
+
+                        driverXbox.povRight().onTrue(Commands.runOnce(() -> drivebase.side = Side.RIGHT));
+
+                        coDriverXbox.leftBumper().onTrue(Commands.none());
+                        coDriverXbox.rightBumper().onTrue(Commands.none());
+                        coDriverXbox.y().onTrue(Commands.none());
+                        coDriverXbox.a().onTrue(Commands.none());
+
+                        coDriverXbox.povLeft().onTrue(Commands.none());
+                        coDriverXbox.povUp().onTrue(Commands.none());
+                        coDriverXbox.povDown().onTrue(Commands.none());
+                        coDriverXbox.povRight().onTrue(Commands.none());
                 }
                 if (DriverStation.isTest()) {
                         // drivebase.setDefaultCommand(driveFieldOrientedAnglularVelocity); // Overrides
@@ -211,52 +293,7 @@ public class RobotContainer implements Logged {
                         driverXbox.povRight().onTrue(Commands.none());
                         driverXbox.povDown().onTrue(Commands.none());
 
-                } else {
-                        driverXbox.a().onTrue((Commands.runOnce(drivebase::zeroGyro)));
-                        driverXbox.x().onTrue(Commands.runOnce(drivebase::addFakeVisionReading));
-                        driverXbox.b().whileTrue(
-                                        drivebase.driveToPose(
-                                                        new Pose2d(new Translation2d(6, 3.8),
-                                                                        Rotation2d.fromDegrees(180))));
-                        driverXbox.y().onTrue(Commands.none());
-                        driverXbox.start().onTrue(drivebase.centerModulesCommand());
-                        driverXbox.back().whileTrue(Commands.none());
-
-                        // driverXbox.leftBumper().whileTrue(Commands.runOnce(drivebase::lock,
-                        // drivebase).repeatedly());
-                        driverXbox.rightBumper().onTrue(
-                                        Commands.runOnce(() -> drivebase.resetOdometry(
-                                                        new Pose2d(7.372, 6.692, new Rotation2d(Math.PI)))));
-
-                        driverXbox.leftTrigger().whileTrue(
-                                        new DriveToNearestReefZone(drivebase, Side.LEFT)
-                                                        .withInterruptBehavior(InterruptionBehavior.kCancelSelf));
-
-                        driverXbox.rightTrigger().whileTrue(
-                                        new DriveToNearestReefZone(drivebase, Side.RIGHT)
-                                                        .withInterruptBehavior(InterruptionBehavior.kCancelSelf));
-
-                        driverXbox.leftBumper().whileTrue(
-                                        new DriveToNearestCoralStation(drivebase));
-
-                        driverXbox.povDown().onTrue(new DriveToAlgaeProcessor(drivebase));
-
-                        driverXbox.povUp().onTrue(
-                                        new DriveToNearestReefZone(drivebase, Side.CENTER)
-                                                        .withInterruptBehavior(InterruptionBehavior.kCancelSelf));
-
                 }
-
-                coDriverXbox.leftBumper().onTrue(Commands.none());
-                coDriverXbox.rightBumper().onTrue(Commands.none());
-                coDriverXbox.y().onTrue(Commands.none());
-                coDriverXbox.a().onTrue(Commands.none());
-
-                coDriverXbox.povLeft().onTrue(Commands.none());
-                coDriverXbox.povUp().onTrue(Commands.none());
-                coDriverXbox.povDown().onTrue(Commands.none());
-                coDriverXbox.povRight().onTrue(Commands.none());
-
         }
 
         /**
@@ -300,4 +337,5 @@ public class RobotContainer implements Logged {
                                 Commands.runOnce(() -> controller.getHID().setRumble(type, 0.0)));
 
         }
+
 }

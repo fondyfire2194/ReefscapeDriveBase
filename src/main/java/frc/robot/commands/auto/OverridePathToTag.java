@@ -5,6 +5,8 @@
 package frc.robot.commands.auto;
 
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
+import com.pathplanner.lib.trajectory.PathPlannerTrajectory;
+
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.swervedrive.SwerveSubsystem;
 import frc.robot.utils.LimelightHelpers;
@@ -24,11 +26,14 @@ public class OverridePathToTag extends Command {
 
   double kpr = 0;
 
-  public OverridePathToTag(SwerveSubsystem swerve, String camName, int tagNumber) {
+  PathPlannerTrajectory m_traj;
+
+  public OverridePathToTag(SwerveSubsystem swerve, String camName, int tagNumber, PathPlannerTrajectory traj) {
     // Use addRequirements() here to declare subsystem dependencies.
     m_swerve = swerve;
     m_camName = camName;
     m_tagNumber = tagNumber;
+    m_traj=traj;
   }
 
   // Called when the command is initially scheduled.
@@ -41,13 +46,17 @@ public class OverridePathToTag extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
+    m_traj.getState(3).pose.getX();
     double tx = LimelightHelpers.getTX(m_camName);
     if (Math.abs(tx) > correctionXLimit) {
-      PPHolonomicDriveController.overrideXFeedback(() -> tx * Math.cos(tagAngle) * kpx);
-      PPHolonomicDriveController.overrideYFeedback(() -> tx * Math.sin(tagAngle) * kpx);
-      PPHolonomicDriveController
-          .overrideRotationFeedback(() -> (tagAngle - m_swerve.getPose().getRotation().getRadians()) * kpr);
+      PPHolonomicDriveController.overrideXFeedback(() -> tx * kpx);
     }
+    double ty = LimelightHelpers.getTY(m_camName);
+    if (Math.abs(ty) > correctionYLimit) {
+      PPHolonomicDriveController.overrideYFeedback(() -> ty * kpy);
+    }
+    PPHolonomicDriveController
+        .overrideRotationFeedback(() -> (tagAngle - m_swerve.getPose().getRotation().getRadians()) * kpr);
   }
 
   // Called once the command ends or is interrupted.

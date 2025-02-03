@@ -99,7 +99,8 @@ public class AbsoluteDriveAdv extends Command
     {
       headingY = 1;
     }
-
+    SmartDashboard.putNumber("HEADINGX", headingX);
+    SmartDashboard.putNumber("HEADINGY", headingY);
     // Prevent Movement After Auto
     if (resetHeading)
     {
@@ -111,6 +112,8 @@ public class AbsoluteDriveAdv extends Command
         // Set the Current Heading to the desired Heading
         headingX = currentHeading.getSin();
         headingY = currentHeading.getCos();
+
+
       }
       //Dont reset Heading Again
       resetHeading = false;

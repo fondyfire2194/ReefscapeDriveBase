@@ -41,6 +41,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Config;
 import frc.robot.Constants;
+import frc.robot.Constants.FieldConstants.Side;
 import frc.robot.VisionConstants.CameraConstants;
 import frc.robot.utils.LimelightTagsUpdate;
 import monologue.Annotations.Log;
@@ -115,22 +116,26 @@ public class SwerveSubsystem extends SubsystemBase implements Logged {
   public Pose2d plusBorderPose = new Pose2d();;
   @Log
   public Pose2d minusBorderPose = new Pose2d();;
-  public double yZoneLimitAngle = 60;
+  public double yZoneLimitAngle = 30;
   @Log
   public int processorStationTag;
   @Log
   public Pose2d processorStationTargetPose;
   @Log
-public Pose2d processorStationFinalTargetPose;
+  public Pose2d processorStationFinalTargetPose;
 
-PPHolonomicDriveController pphc =           new PPHolonomicDriveController(
-  // PPHolonomicController is the built in path following controller for holonomic
-  // drive trains
-  new PIDConstants(5.0, 0.0, 0.0),
-  // Translation PID constants
-  new PIDConstants(5.0, 0.0, 0.0));
-public boolean lockPoseChange;
+  @Log
 
+  public Side side = Side.LEFT;
+
+  PPHolonomicDriveController pphc = new PPHolonomicDriveController(
+      // PPHolonomicController is the built in path following controller for holonomic
+      // drive trains
+      new PIDConstants(5.0, 0.0, 0.0),
+      // Translation PID constants
+      new PIDConstants(5.0, 0.0, 0.0));
+  public boolean lockPoseChange;
+  public int targetTagNumber;
 
   /**
    * Initialize {@link SwerveDrive} with the directory provided.
@@ -217,13 +222,14 @@ public boolean lockPoseChange;
         Constants.MAX_SPEED,
         new Pose2d(new Translation2d(Meter.of(2), Meter.of(0)),
             Rotation2d.fromDegrees(0)));
+
   }
 
   /**
    * Setup the photon vision class.
    */
   public void setupPhotonVision() {
-    
+
   }
 
   @Override
@@ -305,6 +311,7 @@ public boolean lockPoseChange;
           },
           this
       // Reference to this subsystem to set requirements
+
       );
 
     } catch (Exception e) {
@@ -337,6 +344,7 @@ public boolean lockPoseChange;
    */
   public Command driveToPose(Pose2d pose) {
     // Create the constraints to use while pathfinding
+    SmartDashboard.putString("REEFFINAL", pose.toString());
     PathConstraints constraints = new PathConstraints(
         swerveDrive.getMaximumChassisVelocity(), 4.0,
         swerveDrive.getMaximumChassisAngularVelocity(), Units.degreesToRadians(720));
@@ -609,6 +617,12 @@ public boolean lockPoseChange;
   @Log.NT(key = "poseestimate")
   public Pose2d getPose() {
     return swerveDrive.getPose();
+  }
+
+  @Log.NT(key="finalreeftargetpose")
+
+  public Pose2d getFinalReefTargetPose(){
+    return reefFinalTargetPose;
   }
 
   public SwerveDrivePoseEstimator getPoseEstimator() {

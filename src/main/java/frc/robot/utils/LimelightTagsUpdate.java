@@ -5,7 +5,6 @@
 package frc.robot.utils;
 
 import edu.wpi.first.math.VecBuilder;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.VisionConstants.CameraConstants;
 import frc.robot.subsystems.swervedrive.SwerveSubsystem;
 

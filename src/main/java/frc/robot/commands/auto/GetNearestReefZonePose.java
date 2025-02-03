@@ -12,11 +12,12 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.FieldConstants;
 import frc.robot.Constants.FieldConstants.Side;
+import frc.robot.Factories.CommandFactory;
 import frc.robot.Constants.RobotConstants;
 import frc.robot.subsystems.swervedrive.SwerveSubsystem;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
-public class DriveToNearestReefZone extends Command {
+public class GetNearestReefZonePose extends Command {
   /** Creates a new FindRobotReefZone. */
   SwerveSubsystem m_swerve;
 
@@ -26,16 +27,19 @@ public class DriveToNearestReefZone extends Command {
   boolean setSide;
   Translation2d tl2d;
 
-  public DriveToNearestReefZone(SwerveSubsystem swerve, Side side) {
+  private CommandFactory m_cf;
+
+  public GetNearestReefZonePose(SwerveSubsystem swerve, Side side) {
     m_swerve = swerve;
     m_side = side;
     setSide = false;
     // Use addRequirements() here to declare subsystem dependencies.
   }
 
-  public DriveToNearestReefZone(SwerveSubsystem swerve) {
+  public GetNearestReefZonePose(SwerveSubsystem swerve, CommandFactory cf) {
     m_swerve = swerve;
     setSide = true;
+    m_cf = cf;
     // Use addRequirements() here to declare subsystem dependencies.
   }
 
@@ -46,6 +50,7 @@ public class DriveToNearestReefZone extends Command {
     exit = false;
     if (setSide)
       m_side = m_swerve.side;
+
   }
 
   // Called every time the scheduler runs while the command is scheduled.
@@ -53,35 +58,32 @@ public class DriveToNearestReefZone extends Command {
   public void execute() {
     Pose2d targetPose = new Pose2d();
 
-    if (!m_swerve.lockPoseChange) {
+    // if (!m_swerve.lockPoseChange) {
 
-      targetPose = m_swerve.reefTargetPose;
+    targetPose = m_swerve.reefTargetPose;
 
-      double baseOffset = RobotConstants.placementOffset + RobotConstants.ROBOT_LENGTH / 2;
+    double baseOffset = RobotConstants.placementOffset + RobotConstants.ROBOT_LENGTH / 2;
 
-      if (m_side == Side.CENTER)
-        tl2d = new Translation2d(baseOffset, 0);
-      if (m_side == Side.RIGHT)
-        tl2d = new Translation2d(baseOffset, FieldConstants.reefOffset);
-      if (m_side == Side.LEFT)
-        tl2d = new Translation2d(baseOffset, -FieldConstants.reefOffset);
+    if (m_side == Side.CENTER)
+      tl2d = new Translation2d(baseOffset, 0);
+    if (m_side == Side.RIGHT)
+      tl2d = new Translation2d(baseOffset, FieldConstants.reefOffset);
+    if (m_side == Side.LEFT)
+      tl2d = new Translation2d(baseOffset, -FieldConstants.reefOffset);
 
-      Transform2d tr2d = new Transform2d(tl2d, new Rotation2d(Units.degreesToRadians(180)));
+    Transform2d tr2d = new Transform2d(tl2d, new Rotation2d(Units.degreesToRadians(180)));
 
-      m_swerve.reefFinalTargetPose = targetPose.transformBy(tr2d);
+    m_swerve.reefFinalTargetPose = targetPose.transformBy(tr2d);
 
-      m_swerve.driveToPose(m_swerve.reefFinalTargetPose).schedule();
-
-      exit = true;
-    } else
-      tst++;
+    exit = true;
+    // } else
+    // tst++;
   }
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-
-
+  
   }
 
   // Returns true when the command should end.
