@@ -19,12 +19,13 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.Constants.FieldConstants.Side;
 import frc.robot.Factories.CommandFactory;
+import frc.robot.commands.auto.DriveToAlgaeProcessor;
+import frc.robot.commands.auto.DriveToNearestCoralStation;
 import frc.robot.commands.auto.DriveToNearestReefZone;
 import frc.robot.commands.auto.FindCurrentReefZone;
 import frc.robot.commands.auto.GetNearestReefZonePose;
@@ -212,13 +213,11 @@ public class RobotContainer implements Logged {
                                                         .resetOdometry(new Pose2d(8, 4, new Rotation2d()))));
                 }
                 if (DriverStation.isTeleop()) {
-                        driverXbox.a().onTrue((Commands.runOnce(drivebase::zeroGyro)));
-                        driverXbox.x().onTrue(Commands.runOnce(drivebase::addFakeVisionReading));
+                       // driverXbox.a().onTrue(place coral
+                        driverXbox.x().onTrue(Commands.runOnce(drivebase::zeroGyro));
                         driverXbox.b().whileTrue(
-                                        drivebase.driveToPose(
-                                                        new Pose2d(new Translation2d(6, 3.8),
-                                                                        Rotation2d.fromDegrees(180))));
-                        driverXbox.y().onTrue(Commands.none());
+                                        Commands.none());//place algae
+                        driverXbox.y().onTrue(Commands.none());//intake alga
                         driverXbox.start().onTrue(drivebase.centerModulesCommand());
                         driverXbox.back().whileTrue(Commands.none());
 
@@ -239,37 +238,52 @@ public class RobotContainer implements Logged {
                                                                                                         OperatorConstants.RIGHT_X_DEADBAND))))
                                         .onFalse(new GetNearestReefZonePose(drivebase, cf));
 
-                        driverXbox.rightBumper().onTrue(
-                                        Commands.runOnce(() -> drivebase.resetOdometry(
-                                                        new Pose2d(7.372, 6.692, new Rotation2d(Math.PI)))));
+                        driverXbox.rightBumper().whileTrue(new DriveToNearestCoralStation(drivebase))
+                                        .onFalse(Commands.runOnce(() -> rumble(driverXbox, RumbleType.kLeftRumble, .1),
+                                                        drivebase));
 
                         driverXbox.leftTrigger().whileTrue(
                                         new DriveToNearestReefZone(drivebase))
-                                        .onChange(Commands.runOnce(() -> rumble(driverXbox, RumbleType.kLeftRumble, .1),
+                                        .onFalse(Commands.runOnce(() -> rumble(driverXbox, RumbleType.kLeftRumble, .1),
                                                         drivebase));
 
-                        driverXbox.rightTrigger().onTrue(Commands.none());
+                        driverXbox.rightTrigger().whileTrue(new DriveToAlgaeProcessor(drivebase))
+                        .onFalse(Commands.runOnce(() -> rumble(driverXbox, RumbleType.kLeftRumble, .1),
+                                        drivebase));
 
-                        // driverXbox.leftBumper().whileTrue(
-                        // new DriveToNearestCoralStation(drivebase));
-
-                        driverXbox.povDown().onTrue(new DriveToNearestReefZone(drivebase));
+                        // driverXbox.povDown().whileTrue(new DriveToAlgaeProcessor(drivebase))
+                        //                 .onFalse(Commands.runOnce(() -> rumble(driverXbox, RumbleType.kLeftRumble, .1),
+                        //                                 drivebase));
 
                         driverXbox.povUp().onTrue(Commands.none());
 
-                        driverXbox.povLeft().onTrue(Commands.runOnce(() -> drivebase.side = Side.LEFT));
+                        // driverXbox.povLeft().onTrue(Commands.runOnce(() -> drivebase.side =
+                        // Side.LEFT));
 
-                        driverXbox.povRight().onTrue(Commands.runOnce(() -> drivebase.side = Side.RIGHT));
+                        // driverXbox.povRight().onTrue(Commands.runOnce(() -> drivebase.side =
+                        // Side.RIGHT));
 
-                        coDriverXbox.leftBumper().onTrue(Commands.none());
-                        coDriverXbox.rightBumper().onTrue(Commands.none());
-                        coDriverXbox.y().onTrue(Commands.none());
-                        coDriverXbox.a().onTrue(Commands.none());
+                        coDriverXbox.povRight().onTrue(drivebase.setSide(Side.RIGHT));
 
-                        coDriverXbox.povLeft().onTrue(Commands.none());
-                        coDriverXbox.povUp().onTrue(Commands.none());
-                        coDriverXbox.povDown().onTrue(Commands.none());
-                        coDriverXbox.povRight().onTrue(Commands.none());
+                        coDriverXbox.povLeft().onTrue(drivebase.setSide(Side.LEFT));
+
+                        coDriverXbox.povUp().onTrue(drivebase.setSide(Side.CENTER));
+
+                        // coDriverXbox.povLeft().onTrue(arm.setGoalDegreesCommand(ArmSetpoints.kAlgae));
+
+
+                        // coDriverXbox.a().onTrue(
+                        // new ParallelCommandGroup(cf.setSetpointCommand(Setpoint.kLevel1),
+                        // coral.setTargetRPM(CoralSetpoints.kReefPlaceL123)));
+                        // coDriverXbox.x().onTrue(
+                        // new ParallelCommandGroup(cf.setSetpointCommand(Setpoint.kLevel2),
+                        // coral.setTargetRPM(CoralSetpoints.kReefPlaceL123)));
+                        // coDriverXbox.b().onTrue(new
+                        // ParallelCommandGroup(cf.setSetpointCommand(Setpoint.kLevel3),
+                        // coral.setTargetRPM(CoralSetpoints.kReefPlaceL123)));
+                        // coDriverXbox.y().onTrue(new
+                        // ParallelCommandGroup(cf.setSetpointCommand(Setpoint.kLevel4),
+                        // coral.setTargetRPM(CoralSetpoints.kReefPlaceL4)));
                 }
                 if (DriverStation.isTest()) {
                         // drivebase.setDefaultCommand(driveFieldOrientedAnglularVelocity); // Overrides

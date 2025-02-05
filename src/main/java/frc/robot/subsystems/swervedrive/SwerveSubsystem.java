@@ -256,6 +256,10 @@ public class SwerveSubsystem extends SubsystemBase implements Logged {
 
   }
 
+  public Command setSide(Side sideIn){
+return Commands.runOnce(()-> side = sideIn);
+  }
+
   /**
    * Setup AutoBuilder for PathPlanner.
    */
