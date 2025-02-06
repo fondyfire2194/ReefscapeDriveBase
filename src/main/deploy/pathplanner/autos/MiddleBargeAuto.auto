@@ -1,0 +1,87 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "HGDeliverL4"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Deliver Coral L4"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "ColectAlgaeHG"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Intake Algae L2"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "DeliverHGToBarge"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "PickUpIJFromBarge"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "DeliverIJToBarge"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "PickUpEFFromBarge"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "DeliverEFToBarge"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "MoveFromLine"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": null,
+  "choreoAuto": false
+}

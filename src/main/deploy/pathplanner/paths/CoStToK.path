@@ -8,7 +8,7 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.8046849216709844,
+        "x": 2.804684921670984,
         "y": 7.1361282521617175
       },
       "isLocked": false,
@@ -45,7 +45,7 @@
     "rotation": -61.69924423399362
   },
   "reversed": false,
-  "folder": "BlAutoB",
+  "folder": "BSAuto",
   "idealStartingState": {
     "velocity": 0,
     "rotation": -60.42216131873864

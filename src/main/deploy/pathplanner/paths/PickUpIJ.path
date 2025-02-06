@@ -3,25 +3,41 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.3552499999999998,
-        "y": 1.0707499999999994
+        "x": 6.0,
+        "y": 0.6
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.35525,
-        "y": 1.0707499999999994
+        "x": 6.025092992337086,
+        "y": 1.2291244594604265
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 3.800102459016393,
-        "y": 2.4486168032786884
+        "x": 6.3534836065573765,
+        "y": 3.131915983606557
       },
       "prevControl": {
-        "x": 2.9713524590163933,
-        "y": 1.8831168032786887
+        "x": 6.332562090322524,
+        "y": 2.0893373659850853
+      },
+      "nextControl": {
+        "x": 6.35849936861392,
+        "y": 3.381865662804175
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 5.202663934426229,
+        "y": 5.2897028688524586
+      },
+      "prevControl": {
+        "x": 6.8449795081967215,
+        "y": 4.786219262295081
       },
       "nextControl": null,
       "isLocked": false,
@@ -42,13 +58,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 59.85861444792472
+    "rotation": -117.82409638425331
   },
   "reversed": false,
-  "folder": "BNSAuto",
+  "folder": "CenterAuto",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 49.86451443776054
+    "rotation": -90.0
   },
   "useDefaultConstraints": true
 }

@@ -16,12 +16,12 @@
     },
     {
       "anchor": {
-        "x": 1.21875,
-        "y": 1.05125
+        "x": 1.1628073770491802,
+        "y": 1.0700307377049172
       },
       "prevControl": {
-        "x": 2.574,
-        "y": 1.6167499999999992
+        "x": 2.51805737704918,
+        "y": 1.6355307377049164
       },
       "nextControl": null,
       "isLocked": false,
@@ -45,7 +45,7 @@
     "rotation": 53.746162262555146
   },
   "reversed": false,
-  "folder": "BLAutoR",
+  "folder": "BNSAuto",
   "idealStartingState": {
     "velocity": 0,
     "rotation": 59.26451229807982

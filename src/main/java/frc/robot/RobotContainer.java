@@ -18,11 +18,13 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.Constants.FieldConstants.Side;
 import frc.robot.Factories.CommandFactory;
+import frc.robot.Factories.CommandFactory.Setpoint;
 import frc.robot.commands.auto.DriveToAlgaeProcessor;
 import frc.robot.commands.auto.DriveToNearestCoralStation;
 import frc.robot.commands.auto.DriveToNearestReefZone;
@@ -60,7 +62,7 @@ public class RobotContainer implements Logged {
 
         // The robot's subsystems and commands are defined here...
         final SwerveSubsystem drivebase = new SwerveSubsystem(new File(Filesystem.getDeployDirectory(),
-                        "swerve"));
+                        "swerveflipped"));
 
         Trigger reefZoneChange = new Trigger(() -> drivebase.reefZone != drivebase.reefZoneLast);
 
@@ -164,7 +166,37 @@ public class RobotContainer implements Logged {
          */
         public RobotContainer() {
 
-                cf = new CommandFactory(drivebase,ls);
+                cf = new CommandFactory(drivebase, ls);
+
+                NamedCommands.registerCommand("Elevator Arm To Coral Station",
+                                new WaitCommand(3));
+
+                NamedCommands.registerCommand("Elevator Arm To Coral L4",
+                                new WaitCommand(3));
+
+                NamedCommands.registerCommand("Deliver Coral L123", new WaitCommand(3));
+
+                NamedCommands.registerCommand("Deliver Coral L4", new WaitCommand(3));
+
+                NamedCommands.registerCommand("Intake Coral", new WaitCommand(3));
+
+                NamedCommands.registerCommand("Coral Stop Intake", new WaitCommand(3));
+
+                NamedCommands.registerCommand("Intake Algae", new WaitCommand(3));
+
+                NamedCommands.registerCommand("Deliver Algae", new WaitCommand(3));
+
+                NamedCommands.registerCommand("Stop Intake Algae", new WaitCommand(3));
+
+                NamedCommands.registerCommand("Intake Algae L2",
+                                new WaitCommand(3));
+
+                NamedCommands.registerCommand("Intake Algae L3",
+                                new WaitCommand(3));
+
+                NamedCommands.registerCommand("Deliver Processor",
+                                new WaitCommand(3));
+
                 // Configure the trigger bindings
                 configureBindings();
                 // reefZoneChange.onTrue(rumble(driverXbox, RumbleType.kLeftRumble, 1))
@@ -175,7 +207,6 @@ public class RobotContainer implements Logged {
                 autoChooser = AutoBuilder.buildAutoChooser();
 
                 SmartDashboard.putData("PPAutoChooser", autoChooser);
-
                 NamedCommands.registerCommand("test", Commands.print("I EXIST"));
         }
 
@@ -276,7 +307,6 @@ public class RobotContainer implements Logged {
                                         Commands.sequence(
                                                         drivebase.setSide(Side.CENTER),
                                                         Commands.runOnce(() -> ls.setViewTwoSolidColor(Side.CENTER))));
-
 
                         // coDriverXbox.povLeft().onTrue(arm.setGoalDegreesCommand(ArmSetpoints.kAlgae));
 
