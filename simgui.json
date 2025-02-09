@@ -1,5 +1,10 @@
 {
   "HALProvider": {
+    "Addressable LEDs": {
+      "window": {
+        "visible": true
+      }
+    },
     "Other Devices": {
       "SPARK MAX [2]": {
         "header": {
@@ -50,6 +55,9 @@
         "header": {
           "open": true
         }
+      },
+      "window": {
+        "visible": false
       }
     }
   },
@@ -117,18 +125,28 @@
         "window": {
           "visible": true
         }
+      },
+      "/SmartDashboard/PPAutoChooser": {
+        "window": {
+          "visible": true
+        }
       }
     }
   },
   "NetworkTables": {
+    "retained": {
+      "SmartDashboard": {
+        "open": true
+      }
+    },
     "transitory": {
-      "FMSInfo": {
+      "Monologue": {
+        "drivebase": {
+          "open": true
+        },
         "open": true
       },
       "SmartDashboard": {
-        "Field": {
-          "open": true
-        },
         "open": true,
         "swerve": {
           "open": true

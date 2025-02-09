@@ -112,7 +112,7 @@ public final class Constants {
     public static final double ROBOT_LENGTH = Units.inchesToMeters(28);
     public static final double placementOffset = Units.inchesToMeters(12);
     public static final double pickupOffset = Units.inchesToMeters(8);
-    public static double algaeOffset = 6;
+    public static double algaeOffset = Units.inchesToMeters(6);
 
   }
 

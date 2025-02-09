@@ -5,8 +5,10 @@
 package frc.robot;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -156,8 +158,13 @@ public class Robot extends TimedRobot implements Logged {
       CommandScheduler.getInstance().cancelAll();
     }
     m_robotContainer.setDriveMode();
-    m_robotContainer.drivebase.flUpdate.setUseMegatag2(true);
-    m_robotContainer.drivebase.frUpdate.setUseMegatag2(true);
+
+    if(RobotBase.isSimulation()&&m_robotContainer.drivebase.isRedAlliance()){
+      m_robotContainer.drivebase.resetOdometry(new Pose2d(16,4,Rotation2d.fromDegrees(0)));
+    }
+
+    // m_robotContainer.drivebase.flUpdate.setUseMegatag2(true);
+    // m_robotContainer.drivebase.frUpdate.setUseMegatag2(true);
     m_robotContainer.drivebase.inhibitVision = false;
 
   
@@ -190,6 +197,7 @@ public class Robot extends TimedRobot implements Logged {
   @Override
   public void simulationInit() {
 
+   
   }
 
   /**

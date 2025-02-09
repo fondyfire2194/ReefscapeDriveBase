@@ -5,6 +5,8 @@
 package frc.robot.subsystems;
 
 import java.util.Optional;
+
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
@@ -13,26 +15,17 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.VisionConstants;
 import frc.robot.Constants.FieldConstants;
+import frc.robot.VisionConstants.CameraConstants;
 import frc.robot.utils.LimelightHelpers;
+import monologue.Annotations.Log;
+import monologue.Logged;
 
-public class LimelightVision extends SubsystemBase {
+public class LimelightVision extends SubsystemBase implements Logged {
   /** Creates a new LimelightVision. */
-
-  private double llHeartbeatfl;
-  private double llHeartbeatLastfl;
-  private int samplesfl;
 
   public boolean limelightExistsfl;
 
-  private double llHeartbeatfr;
-  private double llHeartbeatLastfr;
-  private int samplesfr;
-
   public boolean limelightExistsfr;
-
-  private double llHeartbeatr;
-  private double llHeartbeatLastr;
-  private int samplesr;
 
   public boolean limelightExistsr;
   private int loopctr;
@@ -48,6 +41,28 @@ public class LimelightVision extends SubsystemBase {
   Alert flCameraAlert = new Alert("FrontLeftCameraProblem", AlertType.kWarning);
   Alert frCameraAlert = new Alert("FrontRightCameraProblem", AlertType.kError);
   Alert rearCameraAlert = new Alert("RearCameraProblem", AlertType.kInfo);
+  @Log(key = "flaccpose")
+  public static Pose2d flAcceptedPose;
+  @Log(key = "fraccpose")
+  public static Pose2d frAcceptedPose;
+  @Log(key = "rearaccpose")
+  public static Pose2d rearAcceptedPose;
+  @Log(key = "flaccepted")
+  public static int flAcceptedCount;
+  @Log(key = "fraccepted")
+  public static int frAcceptedCount;
+  @Log(key = "rearaccepted")
+  public static int rearAcceptedCount;
+
+  /**
+   * Checks if the specified limelight is connected
+   *
+   * @param limelight A limelight (BACK, FRONT_LEFT, FRONT_RIGHT).
+   * @return True if the limelight network table contains the key "tv"
+   */
+  public boolean isLimelightConnected(String camname) {
+    return LimelightHelpers.getLimelightNTTable(camname).containsKey("tv");
+  }
 
   public LimelightVision() {
 
@@ -70,78 +85,36 @@ public class LimelightVision extends SubsystemBase {
 
   public void setPOILeft(String camname) {
     LimelightHelpers.SetFidcuial3DOffset(camname, FieldConstants.centerToReefBranch, 0, 0);
-
   }
+
+  public double getDistanceToTag(String camname) {
+    if (LimelightHelpers.getTV(camname)) {
+      Pose3d tag3dpose = LimelightHelpers.getTargetPose3d_CameraSpace(camname);
+      return tag3dpose.getTranslation().getNorm();
+    } else
+      return 0;
+  }
+
 
   @Override
   public void periodic() {
-    // This method will be called once per scheduler run
-
-    flCameraAlert.set(limelightExistsfl == false);
-    frCameraAlert.set(limelightExistsfr == false);
-    rearCameraAlert.set(limelightExistsr == false);
-
-    if (loopctr > 2)
-      loopctr = 0;
 
     if (RobotBase.isReal()) {
       if (VisionConstants.CameraConstants.frontLeftCamera.isUsed && loopctr == 0) {
-        llHeartbeatfl = LimelightHelpers.getLimelightNTDouble(VisionConstants.CameraConstants.frontLeftCamera.camname,
-            "hb");
-        if (llHeartbeatfl == llHeartbeatLastfl) {
-          samplesfl += 1;
-        } else {
-          samplesfl = 0;
-          llHeartbeatLastfl = llHeartbeatfl;
-          limelightExistsfl = true;
-        }
-        if (samplesfl > 5)
-          limelightExistsfl = false;
+        limelightExistsfl = isLimelightConnected(CameraConstants.frontLeftCamera.camname);
+        limelightExistsfr = isLimelightConnected(CameraConstants.frontRightCamera.camname);
+        limelightExistsr = isLimelightConnected(CameraConstants.rearCamera.camname);
 
-        VisionConstants.CameraConstants.frontLeftCamera.isActive = limelightExistsfl;
-      }
-      if (VisionConstants.CameraConstants.frontRightCamera.isUsed && loopctr == 1) {
-        llHeartbeatfr = LimelightHelpers.getLimelightNTDouble(VisionConstants.CameraConstants.frontRightCamera.camname,
-            "hb");
-        if (llHeartbeatfr == llHeartbeatLastfr) {
-          samplesfr += 1;
-        } else {
-          samplesfr = 0;
-          llHeartbeatLastfr = llHeartbeatfr;
-          limelightExistsfr = true;
-        }
-        if (samplesfr > 5)
-          limelightExistsfr = false;
-
-        VisionConstants.CameraConstants.frontRightCamera.isActive = limelightExistsfr;
+        boolean allcamsok = VisionConstants.CameraConstants.frontLeftCamera.isUsed && limelightExistsfl
+            && VisionConstants.CameraConstants.frontRightCamera.isUsed && limelightExistsfr
+            && VisionConstants.CameraConstants.rearCamera.isUsed && limelightExistsr;
+        SmartDashboard.putBoolean("LL//CamsOK", allcamsok);
       }
 
-      if (VisionConstants.CameraConstants.rearCamera.isUsed && loopctr == 2) {
-        llHeartbeatr = LimelightHelpers.getLimelightNTDouble(VisionConstants.CameraConstants.rearCamera.camname, "hb");
-        if (llHeartbeatr == llHeartbeatLastr) {
-          samplesr += 1;
-        } else {
-          samplesr = 0;
-          llHeartbeatLastr = llHeartbeatr;
-          limelightExistsr = true;
-        }
-        if (samplesr > 5)
-          limelightExistsr = false;
-
-        VisionConstants.CameraConstants.rearCamera.isActive = limelightExistsr;
-      }
+      SmartDashboard.putBoolean("LL//FrontLeftCamOk", limelightExistsfl);
+      SmartDashboard.putBoolean("LL//FrontRightCamOk", limelightExistsfr);
+      SmartDashboard.putBoolean("LL//RearCamOk", limelightExistsr);
     }
-
-    loopctr++;
-
-    SmartDashboard.putBoolean("LL//FrontLeftCamOk", limelightExistsfl);
-    SmartDashboard.putBoolean("LL//FrontRightCamOk", limelightExistsfr);
-    SmartDashboard.putBoolean("LL//RearCamOk", limelightExistsr);
-
-    boolean allcamsok = VisionConstants.CameraConstants.frontLeftCamera.isUsed && limelightExistsfl
-        && VisionConstants.CameraConstants.frontRightCamera.isUsed && limelightExistsfr
-        && VisionConstants.CameraConstants.rearCamera.isUsed && limelightExistsr;
-    SmartDashboard.putBoolean("LL//CamsOK", allcamsok);
   }
 
   public void setCamToRobotOffset(VisionConstants.CameraConstants.CameraValues cam) {

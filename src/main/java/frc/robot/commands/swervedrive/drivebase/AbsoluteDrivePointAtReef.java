@@ -26,11 +26,9 @@ public class AbsoluteDrivePointAtReef extends Command {
   private final DoubleSupplier vX, vY;
   private final DoubleSupplier headingAdjust;
   private boolean resetHeading = false;
-  private double[] zoneHeadingXBlue = { 0, 0, -0.866, -.866, 0, .866, 0.866 };
-  private double[] zoneHeadingYBlue = { 0, 1, .5, -.5, -1, -.5, 0.5 };
-
-  private double[] zoneHeadingXRed = { 0, 0, -.866, -.866, 0, .866, .866 };
-  private double[] zoneHeadingYRed = { 0, -1, -.5, .5, 1, .5, -.5 };
+  private double[] zoneHeadingX = { 0, 0, -0.866, -.866, 0, .866, 0.866 };
+  private double[] zoneHeadingY = { 0, 1, .5, -.5, -1, -.5, 0.5 };
+  // private double[] zoneHeadingYRed = { 0, -1, -.5, .5, 1, .5, -.5 };
   private int reefZoneLast = 9;
   private int ctr;
   double headingX = 0;
@@ -87,18 +85,13 @@ public class AbsoluteDrivePointAtReef extends Command {
     SmartDashboard.putNumber("HEADINGZONELAST", reefZoneLast);
 
     if (!resetHeading && swerve.reefZone != 0 && swerve.reefZone != reefZoneLast) {
+      headingX = zoneHeadingX[swerve.reefZone];
 
       if (swerve.isBlueAlliance()) {
-
-        headingX = zoneHeadingXBlue[swerve.reefZone];
-        headingY = zoneHeadingYBlue[swerve.reefZone];
-
+        headingY = zoneHeadingY[swerve.reefZone];
       }
-
       else {
-        headingX = zoneHeadingXRed[swerve.reefZone];
-        headingY = zoneHeadingYRed[swerve.reefZone];
-
+        headingY = -zoneHeadingY[swerve.reefZone];
       }
       ctr++;
       SmartDashboard.putNumber("HEADINGCT", ctr);

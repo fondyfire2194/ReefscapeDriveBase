@@ -66,7 +66,7 @@ public class DriveToAlgaeProcessor extends Command {
 
     Transform2d tr2d = new Transform2d(tl2d, new Rotation2d(Units.degreesToRadians(180)));
 
-    m_swerve.processorStationFinalTargetPose = m_swerve.coralStationTargetPose.transformBy(tr2d);
+    m_swerve.processorStationFinalTargetPose = m_swerve.processorStationTargetPose.transformBy(tr2d);
 
     m_swerve.driveToPose(m_swerve.processorStationFinalTargetPose).schedule();
 

@@ -6,6 +6,8 @@ package frc.robot.Factories;
 
 import java.util.Optional;
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
@@ -13,7 +15,9 @@ import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.robot.commands.auto.FindCurrentReefZone;
 import frc.robot.subsystems.swervedrive.SwerveSubsystem;
 import frc.robot.utils.LedStrip;
 
@@ -21,14 +25,28 @@ import frc.robot.utils.LedStrip;
 public class CommandFactory {
 
         SwerveSubsystem m_swerve;
-      
+
         LedStrip m_ls;
 
-        public CommandFactory(SwerveSubsystem swerve,  LedStrip ls) {
+        Pose2d GHZonePoseBlue = new Pose2d(6.75, 4, Rotation2d.fromDegrees(180));
+        Pose2d GHZonePoseRed = new Pose2d(10.8, 4, Rotation2d.fromDegrees(0));
+
+        public CommandFactory(SwerveSubsystem swerve, LedStrip ls) {
                 m_swerve = swerve;
-               
                 m_ls = ls;
         }
+
+        public Command driveToGHZoneCommand() {
+                return Commands.parallel(
+                                new ConditionalCommand(
+                                                m_swerve.driveToPose(GHZonePoseBlue),
+                                                m_swerve.driveToPose(GHZonePoseRed),
+                                                () -> m_swerve.isBlueAlliance()),
+                                new FindCurrentReefZone(m_swerve, m_ls));
+        }
+
+     
+
 
         public Command rumble(CommandXboxController controller, RumbleType type, double timeout) {
                 return Commands.sequence(

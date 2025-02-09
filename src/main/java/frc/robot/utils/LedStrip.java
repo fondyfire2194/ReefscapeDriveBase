@@ -35,9 +35,9 @@ public class LedStrip {
 
         m_ledbuffer = new AddressableLEDBuffer(60);
         m_led.setLength(m_ledbuffer.getLength());
-        m_view1 = new AddressableLEDBufferView(m_ledbuffer, 1, 9);
-        m_view2 = new AddressableLEDBufferView(m_ledbuffer, 10, 14);
-        m_view3 = new AddressableLEDBufferView(m_ledbuffer, 15, 19);
+        m_view1 = new AddressableLEDBufferView(m_ledbuffer, 51, 59);
+        m_view2 = new AddressableLEDBufferView(m_ledbuffer, 40, 45);
+        m_view3 = new AddressableLEDBufferView(m_ledbuffer, 30, 35);
 
         m_led.setData(m_ledbuffer);
         m_led.start();

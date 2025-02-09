@@ -67,9 +67,9 @@ public final class VisionConstants {
     public static CameraValues frontLeftCamera = new CameraValues(
         "limelight-frleft",
         "10.21.94.15",
-        Units.inchesToMeters(10.75),
-        Units.inchesToMeters(-7.25),
-        Units.inchesToMeters(9.0),
+        Units.inchesToMeters(14),
+        Units.inchesToMeters(-8),
+        Units.inchesToMeters(8.5),
         0,
         12, // deg 19
         7.5,
@@ -83,9 +83,9 @@ public final class VisionConstants {
     public static CameraValues frontRightCamera = new CameraValues(
         "limelight-frright",
         "10.21.94.16",
-        Units.inchesToMeters(10.75),
-        Units.inchesToMeters(7.25),
-        Units.inchesToMeters(9.0),
+        Units.inchesToMeters(14),
+        Units.inchesToMeters(8),
+        Units.inchesToMeters(8.5),
         0,
         12, // deg
         -7.5,
