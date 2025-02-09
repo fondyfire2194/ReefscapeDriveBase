@@ -17,14 +17,12 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.Constants.FieldConstants.Side;
 import frc.robot.Factories.CommandFactory;
-import frc.robot.Factories.CommandFactory.Setpoint;
 import frc.robot.commands.auto.DriveToAlgaeProcessor;
 import frc.robot.commands.auto.DriveToNearestCoralStation;
 import frc.robot.commands.auto.DriveToNearestReefZone;
@@ -62,7 +60,7 @@ public class RobotContainer implements Logged {
 
         // The robot's subsystems and commands are defined here...
         final SwerveSubsystem drivebase = new SwerveSubsystem(new File(Filesystem.getDeployDirectory(),
-                        "swerveflipped"));
+                        "swerve"));
 
         Trigger reefZoneChange = new Trigger(() -> drivebase.reefZone != drivebase.reefZoneLast);
 
@@ -224,10 +222,7 @@ public class RobotContainer implements Logged {
          * Flight joysticks}.
          */
         private void configureBindings() {
-                // (Condition) ? Return-On-True : Return-on-False
-                // drivebase.setDefaultCommand(
-                // !RobotBase.isSimulation() ? driveFieldOrientedDirectAngle :
-                // driveFieldOrientedDirectAngleSim);
+
                 drivebase.setDefaultCommand(
                                 Commands.parallel(
                                                 new FindCurrentReefZone(drivebase, ls),
@@ -241,6 +236,7 @@ public class RobotContainer implements Logged {
                                                                                                 * getAllianceFactor(),
                                                                                 OperatorConstants.DEADBAND),
                                                                 () -> -MathUtil.applyDeadband(driverXbox.getRightX(),
+
                                                                                 OperatorConstants.RIGHT_X_DEADBAND))));
 
                 if (Robot.isSimulation()) {
@@ -259,19 +255,19 @@ public class RobotContainer implements Logged {
 
                         driverXbox.leftTrigger()
                                         .whileTrue(cf.driveToGHZoneCommand())
-                                                        // new ParallelCommandGroup(
-                                                        //                 new FindCurrentReefZone(drivebase, ls),
-                                                        //                 new AbsoluteDrivePointAtReef(
-                                                        //                                 drivebase,
-                                                        //                                 () -> -MathUtil.applyDeadband(
-                                                        //                                                 driverXbox.getLeftY(),
-                                                        //                                                 OperatorConstants.LEFT_Y_DEADBAND),
-                                                        //                                 () -> -MathUtil.applyDeadband(
-                                                        //                                                 driverXbox.getLeftX(),
-                                                        //                                                 OperatorConstants.DEADBAND),
-                                                        //                                 () -> -MathUtil.applyDeadband(
-                                                        //                                                 driverXbox.getRightX(),
-                                                        //                                                 OperatorConstants.RIGHT_X_DEADBAND))))
+                                        // new ParallelCommandGroup(
+                                        // new FindCurrentReefZone(drivebase, ls),
+                                        // new AbsoluteDrivePointAtReef(
+                                        // drivebase,
+                                        // () -> -MathUtil.applyDeadband(
+                                        // driverXbox.getLeftY(),
+                                        // OperatorConstants.LEFT_Y_DEADBAND),
+                                        // () -> -MathUtil.applyDeadband(
+                                        // driverXbox.getLeftX(),
+                                        // OperatorConstants.DEADBAND),
+                                        // () -> -MathUtil.applyDeadband(
+                                        // driverXbox.getRightX(),
+                                        // OperatorConstants.RIGHT_X_DEADBAND))))
                                         .onFalse(new GetNearestReefZonePose(drivebase, cf));
 
                         driverXbox.leftBumper().whileTrue(

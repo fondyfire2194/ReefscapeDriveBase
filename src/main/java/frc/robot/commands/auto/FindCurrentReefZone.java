@@ -140,7 +140,6 @@ public class FindCurrentReefZone extends Command {
     m_swerve.reefTargetPose = m_swerve.getTagPose(m_swerve.reefZoneTag).toPose2d();
     m_swerve.lockPoseChange = false;
 
-
     m_ledStrip.setViewOneSolidColor(m_swerve.reefZone);
   }
 
@@ -248,7 +247,6 @@ public class FindCurrentReefZone extends Command {
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-
 
   }
 
