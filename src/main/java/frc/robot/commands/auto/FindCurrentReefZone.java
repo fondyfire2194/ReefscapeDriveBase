@@ -91,8 +91,6 @@ public class FindCurrentReefZone extends Command {
         m_swerve.reefZone = 2;
       }
 
-      m_swerve.plusBorderPose = new Pose2d(robotX, plusYBorder, new Rotation2d());
-      m_swerve.minusBorderPose = new Pose2d(robotX, minusYBorder, new Rotation2d());
     }
     // Red Alliance
     else {
@@ -131,10 +129,9 @@ public class FindCurrentReefZone extends Command {
         zoneFound = true;
         m_swerve.reefZone = 6;
       }
-
-      m_swerve.plusBorderPose = new Pose2d(robotX, plusYBorder, new Rotation2d());
-      m_swerve.minusBorderPose = new Pose2d(robotX, minusYBorder, new Rotation2d());
     }
+    m_swerve.plusBorderPose = new Pose2d(robotX, plusYBorder, new Rotation2d());
+    m_swerve.minusBorderPose = new Pose2d(robotX, minusYBorder, new Rotation2d());
 
     m_swerve.lockPoseChange = true;
     m_swerve.reefTargetPose = m_swerve.getTagPose(m_swerve.reefZoneTag).toPose2d();
